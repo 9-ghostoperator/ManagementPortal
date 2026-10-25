@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Property Management Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <!-- LOGIN AND REGISTRATION AREA -->
+    <div id="authPage" class="auth-page">
+        <div class="auth-card">
+            <!-- LPU logo from the university website -->
+            <div class="university-brand login-brand">
+                <img src="https://www.lpu.in/images/logo/lpu-logo.svg" alt="Lovely Professional University logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                <span class="logo-text-fallback">LPU</span>
+            </div>
+            <h1>College Property Management Portal</h1>
+            <p class="small-text">A simple place to manage college properties and requests.</p>
+
+            <div class="auth-tabs">
+                <button id="loginTab" class="tab-button active" onclick="showAuthForm('login')">Login</button>
+                <button id="registerTab" class="tab-button" onclick="showAuthForm('register')">Register</button>
+            </div>
+
+            <form id="loginForm" onsubmit="loginUser(event)">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email" required>
+
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+
+                <button type="submit" class="main-button full-button">Login</button>
+                <p id="loginMessage" class="form-message"></p>
+            </form>
+
+            <form id="registerForm" class="hidden" onsubmit="registerUser(event)">
+                <label for="registerName">Full name</label>
+                <input type="text" id="registerName" placeholder="Enter your name" required>
+
+                <label for="registerEmail">College email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="At least 6 characters" minlength="6" required>
+
+                <label for="confirmPassword">Confirm password</label>
+                <input type="password" id="confirmPassword" placeholder="Enter password again" minlength="6" required>
+
+                <p class="signup-note"><strong>* New sign-ups will automatically be assigned the Student role.</strong></p>
+                <p class="small-text">Demo Admin and Staff accounts are available below.</p>
+                <button type="submit" class="main-button full-button">Create account</button>
+                <p id="registerMessage" class="form-message"></p>
+            </form>
+
+            <div class="demo-box">
+                <h3>Demo accounts</h3>
+                <p><strong>Admin:</strong> admin@college.edu / admin123</p>
+                <p><strong>Staff:</strong> staff@college.edu / staff123</p>
+                <p><strong>Student:</strong> student@college.edu / student123</p>
+                <p class="small-text">Demo only: accounts are saved in this browser, not on a secure server.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PORTAL AREA -->
+    <div id="portalPage" class="hidden">
+        <header class="site-header">
+            <div class="header-brand">
+                <!-- Light version of the LPU logo for the blue header -->
+                <img src="https://www.lpu.in/images/logo/LPU-logo-light.svg" alt="Lovely Professional University logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                <span class="logo-text-fallback header-logo-fallback">LPU</span>
+                <div>
+                    <h1>College Property Management Portal</h1>
+                    <p>Property records, requests and status updates</p>
+                </div>
+            </div>
+            <div class="user-area">
+                <span id="userDetails">Signed in</span>
+                <button class="button light-button" onclick="logoutUser()">Logout</button>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-button active" onclick="showSection('dashboard', this)">Dashboard</button>
+            <button class="nav-button" onclick="showSection('properties', this)">Properties</button>
+            <button class="nav-button" onclick="showSection('requests', this)">Requests</button>
+            <button class="nav-button" onclick="showSection('reports', this)">Basic Reports</button>
+        </nav>
+
+        <main class="page-content">
+            <div id="notice" class="notice hidden" role="status"></div>
+
+            <!-- DASHBOARD -->
+            <section id="dashboardSection" class="page-section">
+                <h2>Dashboard</h2>
+                <p id="welcomeText">Welcome to the portal.</p>
+
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <h3>Total Properties</h3>
+                        <p id="totalProperties">0</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Available Properties</h3>
+                        <p id="availableProperties">0</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Open Requests</h3>
+                        <p id="openRequests">0</p>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Resolved Requests</h3>
+                        <p id="resolvedRequests">0</p>
+                    </div>
+                </div>
+
+                <div class="simple-panel">
+                    <h3>How to use this portal</h3>
+                    <ol>
+                        <li>Open Properties to search or view college property records.</li>
+                        <li>Admin users can add, edit and delete property records.</li>
+                        <li>Use Requests to report maintenance problems or request a booking/allocation.</li>
+                        <li>Staff and Admin users can update the status of requests.</li>
+                        <li>Open Basic Reports to see property and request totals.</li>
+                    </ol>
+                </div>
+
+                <div class="simple-panel">
+                    <h3>Recent requests</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Request</th><th>Property</th><th>Requested by</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="recentRequestsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROPERTY RECORDS -->
+            <section id="propertiesSection" class="page-section hidden">
+                <h2>Property Records</h2>
+                <p>Search the college property list and check the current status.</p>
+
+                <div id="propertyFormPanel" class="simple-panel hidden">
+                    <h3 id="propertyFormTitle">Add a property</h3>
+                    <form id="propertyForm" onsubmit="saveProperty(event)">
+                        <div class="form-grid">
+                            <div>
+                                <label for="propertyName">Property name</label>
+                                <input type="text" id="propertyName" placeholder="e.g. Library Block" required>
+                            </div>
+                            <div>
+                                <label for="propertyType">Property type</label>
+                                <select id="propertyType" required>
+                                    <option value="">Choose type</option>
+                                    <option>Classroom</option>
+                                    <option>Laboratory</option>
+                                    <option>Hostel</option>
+                                    <option>Office</option>
+                                    <option>Hall</option>
+                                    <option>Equipment</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="propertyLocation">Location / room</label>
+                                <input type="text" id="propertyLocation" placeholder="e.g. Block A, Room 101" required>
+                            </div>
+                            <div>
+                                <label for="propertyStatus">Status</label>
+                                <select id="propertyStatus" required>
+                                    <option>Available</option>
+                                    <option>Occupied</option>
+                                    <option>Maintenance</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" id="savePropertyButton" class="main-button">Save property</button>
+                        <button type="button" class="button secondary-button" onclick="cancelPropertyEdit()">Cancel</button>
+                    </form>
+                </div>
+
+                <div class="simple-panel">
+                    <div class="search-row">
+                        <div>
+                            <label for="propertySearch">Search properties</label>
+                            <input type="search" id="propertySearch" placeholder="Search by name, type or location" oninput="renderProperties()">
+                        </div>
+                        <div>
+                            <label for="propertyFilter">Filter by status</label>
+                            <select id="propertyFilter" onchange="renderProperties()">
+                                <option value="All">All statuses</option>
+                                <option>Available</option>
+                                <option>Occupied</option>
+                                <option>Maintenance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Property</th><th>Type</th><th>Location</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="propertiesTable"></tbody>
+                        </table>
+                    </div>
+                    <p id="propertyPermissionNote" class="small-text"></p>
+                </div>
+            </section>
+
+            <!-- REQUEST WORKFLOW -->
+            <section id="requestsSection" class="page-section hidden">
+                <h2>Requests and Status Tracking</h2>
+                <p>Create a request and check its progress here.</p>
+
+                <div class="simple-panel">
+                    <h3>Submit a request</h3>
+                    <form id="requestForm" onsubmit="submitRequest(event)">
+                        <div class="form-grid">
+                            <div>
+                                <label for="requestTitle">Request title</label>
+                                <input type="text" id="requestTitle" placeholder="e.g. Projector is not working" required>
+                            </div>
+                            <div>
+                                <label for="requestType">Request type</label>
+                                <select id="requestType" required>
+                                    <option value="">Choose request type</option>
+                                    <option>Maintenance</option>
+                                    <option>Booking</option>
+                                    <option>Allocation</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="requestProperty">Property</label>
+                                <select id="requestProperty" required></select>
+                            </div>
+                            <div>
+                                <label for="requestPriority">Priority</label>
+                                <select id="requestPriority" required>
+                                    <option>Normal</option>
+                                    <option>High</option>
+                                    <option>Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label for="requestDetails">Description</label>
+                        <textarea id="requestDetails" rows="3" placeholder="Write a few details about your request" required></textarea>
+                        <button type="submit" class="main-button">Submit request</button>
+                    </form>
+                </div>
+
+                <div class="simple-panel">
+                    <h3>Request list</h3>
+                    <p class="small-text">Students can see their own requests. Staff and Admin can see and update all requests.</p>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Request</th><th>Property</th><th>Type</th><th>Priority</th><th>Requested by</th><th>Date</th><th>Status</th><th>Update</th></tr>
+                            </thead>
+                            <tbody id="requestsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BASIC REPORTS -->
+            <section id="reportsSection" class="page-section hidden">
+                <h2>Basic Reports</h2>
+                <p>These totals are calculated from the records currently saved in this browser.</p>
+
+                <div class="simple-panel">
+                    <h3>Properties by status</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Status</th><th>Number of properties</th></tr></thead>
+                            <tbody id="propertyReportTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="simple-panel">
+                    <h3>Requests by status</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Status</th><th>Number of requests</th></tr></thead>
+                            <tbody id="requestReportTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <button class="button secondary-button" onclick="window.print()">Print report</button>
+            </section>
+
+            <footer class="page-footer">College Property Management Portal | Student Project Demo</footer>
+        </main>
+    </div>
+</body>
+</html>
